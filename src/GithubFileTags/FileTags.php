@@ -36,7 +36,7 @@ class FileTags
 	 * Contstructor
 	 *
 	 * @param array $params Aguments needed for retrieving data
-	 * 
+	 *
 	 */
 	public function __construct($params = array())
 	{
@@ -186,12 +186,23 @@ class FileTags
 		// var_dump(__METHOD__, $releases, $this->owner, $this->repo);
 
 		$request = "repos/{$this->owner}/{$this->repo}/tags";
-		$response   = $this->client->getHttpClient()->get($request);
-		$tags = Github\HttpClient\Message\ResponseMediator::getContent($response);
-		foreach ($tags as $tagData) {
-			$this->tags[$tagData['name']] = $tagData;
+
+		try {
+			$paginator = new Github\ResultPager($this->client);
+			$api = $this->client->api('repo');
+			$repo = $api->show($this->owner, $this->repo);
+			$tags = $paginator->fetch($api, 'tags', array($this->owner, $this->repo));
+			do {
+				foreach ($tags as $tagData) {
+					$this->tags[$tagData['name']] = $tagData;
+				}
+			} while ($paginator->hasNext() && $tags = $paginator->fetchNext());
+			ksort($this->tags);
+			// var_dump(__METHOD__, $this->tags);
 		}
-		// var_dump(__METHOD__, $this->tags);
+		catch (Exception $e) {
+			echo "Error getting repo tags: ", $e->Message();
+		}
 	}
 
 	/**
@@ -221,7 +232,10 @@ class FileTags
 			$tree = $this->getTree($sha);
 			$fileContents = $this->getTreeFile($this->filePath, $tree);
 			// var_dump(__METHOD__, $tagName, $fileContents);
-			$this->tagFiles[$tagName] = $fileContents;
+			$this->tagFiles[$tagName] = array(
+				'date'     => $this->tagCommits[$tagName]['commit']['author']['date'],
+				'contents' => $fileContents
+			);
 		}
 	}
 
@@ -266,9 +280,9 @@ class FileTags
 		$blob = Github\HttpClient\Message\ResponseMediator::getContent($response);
 		$fileContents = base64_decode($blob['content']);
 		// var_dump(__METHOD__, $sha, $blob, $fileContents);
-	
+
 		return $fileContents;
-	}	
+	}
 
 	/**
 	 *

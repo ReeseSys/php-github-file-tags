@@ -2,7 +2,7 @@
 	"name": "reesesys/php-github-file-tags",
     "type": "library",
     "description": "Retrieve file versions for each tag in a repository",
-    "homepage": "https://github.com/KnpLabs/php-github-api",
+    "homepage": "https://github.com/ReeseSys/php-github-file-tags",
     "keywords": ["github", "gh", "api", "gist"],
     "license": "MIT",
     "authors": [
@@ -13,7 +13,7 @@
     ],
     "require": {
         "php":             ">=5.3.2",
-    	"knplabs/github-api": "1.2.1"
+    	"knplabs/github-api": "1.5.0"
     },
     "autoload": {
         "psr-0": { "GithubFileTags\\": "src/" }
